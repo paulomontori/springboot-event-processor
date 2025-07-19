@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.annotation.Recover;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class KafkaConsumerService {
@@ -22,10 +26,16 @@ public class KafkaConsumerService {
     }
 
     @KafkaListener(topics = "example-topic", groupId = "example-group")
-    public void listen(String message) {
+    @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+    public void listen(String message) throws ExecutionException, InterruptedException {
         logger.info("Received message: {}", message);
-        kafkaTemplate.send(ASSEMBLY_TOPIC, message);
-        kafkaTemplate.send(INVENTORY_TOPIC, message);
+        kafkaTemplate.send(ASSEMBLY_TOPIC, message).get();
+        kafkaTemplate.send(INVENTORY_TOPIC, message).get();
         logger.info("Emitted events to {} and {}", ASSEMBLY_TOPIC, INVENTORY_TOPIC);
+    }
+
+    @Recover
+    public void recover(Exception e, String message) {
+        logger.error("Failed to process message after retries: {}", message, e);
     }
 }
