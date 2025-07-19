@@ -1,8 +1,8 @@
-package com.example.kafkaconsumer.service;
+package com.pworks.kafkaconsumer.service;
 
-import com.example.kafkaconsumer.model.Item;
-import com.example.kafkaconsumer.model.Purchase;
-import com.example.kafkaconsumer.repository.PurchaseRepository;
+import com.pworks.kafkaconsumer.model.Item;
+import com.pworks.kafkaconsumer.model.Purchase;
+import com.pworks.kafkaconsumer.repository.PurchaseRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

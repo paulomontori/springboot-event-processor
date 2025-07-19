@@ -1,4 +1,4 @@
-package com.example.kafkaconsumer.model;
+package com.pworks.kafkaconsumer.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

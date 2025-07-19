@@ -1,9 +1,9 @@
-package com.example.kafkaconsumer;
+package com.pworks.kafkaconsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
-import com.example.kafkaconsumer.service.PurchaseService;
+import com.pworks.kafkaconsumer.service.PurchaseService;
 import org.springframework.stereotype.Service;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;

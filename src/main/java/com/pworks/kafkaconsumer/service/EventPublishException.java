@@ -1,4 +1,4 @@
-package com.example.kafkaconsumer.service;
+package com.pworks.kafkaconsumer.service;
 
 public class EventPublishException extends RuntimeException {
     public EventPublishException(String message, Throwable cause) {

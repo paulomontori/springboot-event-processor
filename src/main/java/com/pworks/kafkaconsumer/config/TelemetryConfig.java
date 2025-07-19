@@ -1,4 +1,4 @@
-package com.example.kafkaconsumer.config;
+package com.pworks.kafkaconsumer.config;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
