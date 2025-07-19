@@ -9,6 +9,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.example.kafkaconsumer.model.Item;
+import com.example.kafkaconsumer.model.Purchase;
+import com.example.kafkaconsumer.repository.PurchaseRepository;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -23,10 +28,13 @@ public class KafkaConsumerService {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final PurchaseRepository purchaseRepository;
 
     @Autowired
-    public KafkaConsumerService(KafkaTemplate<String, String> kafkaTemplate) {
+    public KafkaConsumerService(KafkaTemplate<String, String> kafkaTemplate,
+                                PurchaseRepository purchaseRepository) {
         this.kafkaTemplate = kafkaTemplate;
+        this.purchaseRepository = purchaseRepository;
     }
 
     @KafkaListener(topics = "new_order", groupId = "example-group")
@@ -38,6 +46,7 @@ public class KafkaConsumerService {
         String purchaseId = root.path("payload").path("purchaseId").asText();
         ArrayNode items = (ArrayNode) root.path("payload").path("items");
 
+        List<Item> itemList = new ArrayList<>();
         for (JsonNode item : items) {
             ObjectNode out = MAPPER.createObjectNode();
             out.put("eventType", "PRODUCTION_ITEM");
@@ -47,7 +56,17 @@ public class KafkaConsumerService {
             payload.put("productId", item.path("productId").asText());
             payload.put("quantity", item.path("quantity").asInt());
             kafkaTemplate.send(ASSEMBLY_TOPIC, MAPPER.writeValueAsString(out)).get();
+
+            Item orderItem = new Item();
+            orderItem.setProductId(item.path("productId").asText());
+            orderItem.setQuantity(item.path("quantity").asInt());
+            itemList.add(orderItem);
         }
+        Purchase purchase = new Purchase();
+        purchase.setPurchaseId(purchaseId);
+        purchase.setEventTimestamp(timestamp);
+        purchase.setItems(itemList);
+        purchaseRepository.save(purchase);
         logger.info("Emitted {} production events to {}", items.size(), ASSEMBLY_TOPIC);
     }
 
