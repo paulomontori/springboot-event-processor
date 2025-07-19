@@ -1,0 +1,64 @@
+package com.example.kafkaconsumer.service;
+
+import com.example.kafkaconsumer.model.Item;
+import com.example.kafkaconsumer.model.Purchase;
+import com.example.kafkaconsumer.repository.PurchaseRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class PurchaseService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PurchaseService.class);
+    private static final String ASSEMBLY_TOPIC = "assembly-line-topic";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    private final EventPublisher eventPublisher;
+    private final PurchaseRepository purchaseRepository;
+
+    public PurchaseService(EventPublisher eventPublisher, PurchaseRepository purchaseRepository) {
+        this.eventPublisher = eventPublisher;
+        this.purchaseRepository = purchaseRepository;
+    }
+
+    public void process(String message) throws Exception {
+        JsonNode root = MAPPER.readTree(message);
+        String timestamp = root.path("eventTimestamp").asText();
+        String purchaseId = root.path("payload").path("purchaseId").asText();
+        ArrayNode items = (ArrayNode) root.path("payload").path("items");
+
+        List<Item> itemList = new ArrayList<>();
+        for (JsonNode item : items) {
+            ObjectNode out = MAPPER.createObjectNode();
+            out.put("eventType", "PRODUCTION_ITEM");
+            out.put("eventTimestamp", timestamp);
+            ObjectNode payload = out.putObject("payload");
+            payload.put("purchaseId", purchaseId);
+            payload.put("productId", item.path("productId").asText());
+            payload.put("quantity", item.path("quantity").asInt());
+
+            eventPublisher.publish(ASSEMBLY_TOPIC, MAPPER.writeValueAsString(out));
+
+            Item orderItem = new Item();
+            orderItem.setProductId(item.path("productId").asText());
+            orderItem.setQuantity(item.path("quantity").asInt());
+            itemList.add(orderItem);
+        }
+
+        Purchase purchase = new Purchase();
+        purchase.setPurchaseId(purchaseId);
+        purchase.setEventTimestamp(timestamp);
+        purchase.setItems(itemList);
+        purchaseRepository.save(purchase);
+
+        logger.info("Emitted {} production events to {}", items.size(), ASSEMBLY_TOPIC);
+    }
+}
