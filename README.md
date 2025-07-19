@@ -19,6 +19,12 @@ Run the application with:
 mvn spring-boot:run
 ```
 
+Metrics are exposed for Prometheus via OpenTelemetry on port `9464`.
+Logs are exported with the OpenTelemetry Logback appender. Configure the
+`OTEL_EXPORTER_OTLP_ENDPOINT` environment variable to point to your
+collector before starting the application. Once running, Grafana can scrape
+`http://localhost:9464/metrics` for visualisation.
+
 The Kafka bootstrap server location and serialization settings can be adjusted in
 `src/main/resources/application.properties`.
 

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.LongCounter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +25,15 @@ public class PurchaseService {
 
     private final EventPublisher eventPublisher;
     private final PurchaseRepository purchaseRepository;
+    private final LongCounter purchaseCounter;
 
-    public PurchaseService(EventPublisher eventPublisher, PurchaseRepository purchaseRepository) {
+    public PurchaseService(EventPublisher eventPublisher, PurchaseRepository purchaseRepository, Meter meter) {
         this.eventPublisher = eventPublisher;
         this.purchaseRepository = purchaseRepository;
+        this.purchaseCounter = meter
+                .counterBuilder("purchases_processed_total")
+                .setDescription("Total number of purchases processed")
+                .build();
     }
 
     public void process(String message) throws Exception {
@@ -59,6 +66,7 @@ public class PurchaseService {
         purchase.setItems(itemList);
         purchaseRepository.save(purchase);
 
+        purchaseCounter.add(1);
         logger.info("Emitted {} production events to {}", items.size(), ASSEMBLY_TOPIC);
     }
 }
