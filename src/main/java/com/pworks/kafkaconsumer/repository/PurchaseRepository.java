@@ -1,7 +1,7 @@
-package com.example.kafkaconsumer.repository;
+package com.pworks.kafkaconsumer.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import com.example.kafkaconsumer.model.Purchase;
+import com.pworks.kafkaconsumer.model.Purchase;
 
 public interface PurchaseRepository extends MongoRepository<Purchase, String> {
 }

@@ -1,7 +1,7 @@
-package com.example.kafkaconsumer.service;
+package com.pworks.kafkaconsumer.service;
 
-import com.example.kafkaconsumer.model.Purchase;
-import com.example.kafkaconsumer.repository.PurchaseRepository;
+import com.pworks.kafkaconsumer.model.Purchase;
+import com.pworks.kafkaconsumer.repository.PurchaseRepository;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;

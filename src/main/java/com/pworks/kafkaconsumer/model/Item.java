@@ -1,4 +1,4 @@
-package com.example.kafkaconsumer.model;
+package com.pworks.kafkaconsumer.model;
 
 public class Item {
     private String productId;

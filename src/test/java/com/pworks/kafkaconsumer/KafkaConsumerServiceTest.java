@@ -1,6 +1,6 @@
-package com.example.kafkaconsumer;
+package com.pworks.kafkaconsumer;
 
-import com.example.kafkaconsumer.service.PurchaseService;
+import com.pworks.kafkaconsumer.service.PurchaseService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
