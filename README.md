@@ -1,11 +1,21 @@
 # Spring Boot Event Processor
 
-This project provides a basic Spring Boot application that consumes purchase
-events from the `new_order` topic and breaks them into production orders. For
-each item in a received purchase, a new event is emitted to
-`assembly-line-topic` so that the production line can start processing it. Every
-received purchase is also saved to a MongoDB collection so that orders can be
-queried later.
+This application consumes purchase events from Kafka, stores them in MongoDB and
+emits one production event per item. Metrics are exported through OpenTelemetry
+so Prometheus or Grafana can monitor the processing pipeline.
+
+## Architecture
+
+```mermaid
+graph TD
+    A[(new_order topic)] --> B[KafkaConsumerService]
+    B --> C[PurchaseService]
+    C --> D[(MongoDB)]
+    C -->|for each item| E[KafkaEventPublisher]
+    E --> F[(assembly-line-topic)]
+    C --> G[OpenTelemetry]
+    G --> H[(Prometheus)]
+```
 
 ## Build
 
@@ -19,18 +29,17 @@ Run the application with:
 mvn spring-boot:run
 ```
 
-Metrics are exposed for Prometheus via OpenTelemetry on port `9464`.
-Logs are exported with the OpenTelemetry Logback appender. Configure the
-`OTEL_EXPORTER_OTLP_ENDPOINT` environment variable to point to your
-collector before starting the application. Once running, Grafana can scrape
-`http://localhost:9464/metrics` for visualisation.
-
-The Kafka bootstrap server location and serialization settings can be adjusted in
-`src/main/resources/application.properties`.
-
-MongoDB connection settings are also defined in that file. Before running the
-application for the first time execute the initialization script:
+Before the first run initialise MongoDB:
 
 ```bash
 mongo < scripts/mongo-init.js
 ```
+
+Metrics are available on `http://localhost:9464/metrics`. Connection properties
+for Kafka and MongoDB are defined in
+`src/main/resources/application.properties`.
+
+## Continuous Integration
+
+GitHub Actions build the project and run unit tests with JaCoCo code coverage.
+The generated report is uploaded as a workflow artifact.
