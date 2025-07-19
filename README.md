@@ -2,7 +2,8 @@
 
 This application consumes purchase events from Kafka, stores them in MongoDB and
 emits one production event per item. Metrics are exported through OpenTelemetry
-so Prometheus or Grafana can monitor the processing pipeline.
+using the OTLP protocol so Grafana or other observability tools can monitor the
+processing pipeline.
 
 ## Architecture
 
@@ -14,7 +15,7 @@ graph TD
     C -->|for each item| E[KafkaEventPublisher]
     E --> F[(assembly-line-topic)]
     C --> G[OpenTelemetry]
-    G --> H[(Prometheus)]
+    G --> H[(OTLP Collector)]
 ```
 
 ## Build
@@ -35,9 +36,9 @@ Before the first run initialise MongoDB:
 mongo < scripts/mongo-init.js
 ```
 
-Metrics are available on `http://localhost:9464/metrics`. Connection properties
-for Kafka and MongoDB are defined in
-`src/main/resources/application.properties`.
+Metrics are exported to the OTLP endpoint defined by the `OTEL_EXPORTER_OTLP_ENDPOINT`
+environment variable (defaults to `http://localhost:4317`). Connection properties
+for Kafka and MongoDB are defined in `src/main/resources/application.properties`.
 
 ## Continuous Integration
 
