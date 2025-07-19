@@ -20,7 +20,7 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "new_order", groupId = "example-group")
     @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void listen(String message) throws Exception {
+    public void listen(String message) {
         logger.info("Received message: {}", message);
         purchaseService.process(message);
     }

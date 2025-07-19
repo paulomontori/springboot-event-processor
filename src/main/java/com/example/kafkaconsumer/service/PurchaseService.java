@@ -3,6 +3,7 @@ package com.example.kafkaconsumer.service;
 import com.example.kafkaconsumer.model.Item;
 import com.example.kafkaconsumer.model.Purchase;
 import com.example.kafkaconsumer.repository.PurchaseRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -36,8 +37,13 @@ public class PurchaseService {
                 .build();
     }
 
-    public void process(String message) throws Exception {
-        JsonNode root = MAPPER.readTree(message);
+    public void process(String message) {
+        JsonNode root;
+        try {
+            root = MAPPER.readTree(message);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid purchase message", e);
+        }
         String timestamp = root.path("eventTimestamp").asText();
         String purchaseId = root.path("payload").path("purchaseId").asText();
         ArrayNode items = (ArrayNode) root.path("payload").path("items");
@@ -52,7 +58,13 @@ public class PurchaseService {
             payload.put("productId", item.path("productId").asText());
             payload.put("quantity", item.path("quantity").asInt());
 
-            eventPublisher.publish(ASSEMBLY_TOPIC, MAPPER.writeValueAsString(out));
+            try {
+                eventPublisher.publish(ASSEMBLY_TOPIC, MAPPER.writeValueAsString(out));
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Failed to serialize production event", e);
+            } catch (Exception e) {
+                throw new EventPublishException("Failed to publish event", e);
+            }
 
             Item orderItem = new Item();
             orderItem.setProductId(item.path("productId").asText());
