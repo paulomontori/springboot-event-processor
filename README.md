@@ -1,9 +1,9 @@
 # Spring Boot Event Processor
 
-This project provides a basic Spring Boot application that consumes Kafka events
-and propagates new ones. When a purchase event is consumed from `example-topic`,
-the application emits a copy of that event to `assembly-line-topic` and
-`inventory-topic`.
+This project provides a basic Spring Boot application that consumes purchase
+events from the `new_order` topic and breaks them into production orders. For
+each item in a received purchase, a new event is emitted to
+`assembly-line-topic` so that the production line can start processing it.
 
 ## Build
 
