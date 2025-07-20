@@ -17,6 +17,11 @@ import io.opentelemetry.api.metrics.LongCounter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Core domain service that converts incoming purchase messages into production
+ * events and persists them.  Encapsulating this logic allows the consumer to
+ * remain thin and makes the service reusable by other entry points if needed.
+ */
 @Service
 public class PurchaseService {
 
@@ -28,6 +33,11 @@ public class PurchaseService {
     private final PurchaseRepository purchaseRepository;
     private final LongCounter purchaseCounter;
 
+    /**
+     * Constructs the service with dependencies on the event publisher, MongoDB
+     * repository and the metrics {@link Meter}.  Dependencies are injected to
+     * keep the service free from initialization logic.
+     */
     public PurchaseService(EventPublisher eventPublisher, PurchaseRepository purchaseRepository, Meter meter) {
         this.eventPublisher = eventPublisher;
         this.purchaseRepository = purchaseRepository;
@@ -37,6 +47,11 @@ public class PurchaseService {
                 .build();
     }
 
+    /**
+     * Processes a raw purchase message, creating one production event per item
+     * and storing the purchase in MongoDB.  Parsing and validation is performed
+     * here to keep the consumer layer simple.
+     */
     public void process(String message) {
         JsonNode root;
         try {

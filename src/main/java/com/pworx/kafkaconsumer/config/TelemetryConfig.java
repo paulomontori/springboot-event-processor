@@ -11,9 +11,20 @@ import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configures OpenTelemetry for exporting custom metrics.  Separating telemetry
+ * setup into its own configuration class allows metrics to be injected
+ * anywhere without leaking vendor specific details throughout the codebase.
+ */
 @Configuration
 public class TelemetryConfig {
 
+    /**
+     * Builds an {@link OpenTelemetry} instance with an OTLP metrics exporter.
+     * The endpoint is read from the {@code OTEL_EXPORTER_OTLP_ENDPOINT}
+     * environment variable so that deployments can route telemetry to different
+     * backends.
+     */
     @Bean
     public OpenTelemetry openTelemetry() {
         MetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
@@ -31,6 +42,10 @@ public class TelemetryConfig {
                 .build();
     }
 
+    /**
+     * Exposes a {@link Meter} bean so other services can create counters and
+     * gauges.  Using a named meter groups all metrics under a common namespace.
+     */
     @Bean
     public Meter otelMeter(OpenTelemetry openTelemetry) {
         return openTelemetry.getMeter("springboot-event-processor");
