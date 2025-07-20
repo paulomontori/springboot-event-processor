@@ -18,6 +18,16 @@ graph TD
     G --> H[(OTLP Collector)]
 ```
 
+### Architectural Decisions
+
+- **Event-driven design:** Kafka acts as the message backbone to decouple services and scale throughput.
+- **Document storage:** MongoDB was selected for its schema flexibility when storing purchase payloads.
+- **Layered responsibilities:** `KafkaConsumerService` handles only message consumption, delegating parsing and persistence to `PurchaseService`.
+- **Transport abstraction:** the `EventPublisher` interface hides the underlying KafkaTemplate so publishing can be mocked or replaced.
+- **Synchronous delivery:** events are sent synchronously to guarantee ordering and surface failures immediately.
+- **Automatic retries:** Spring Retry replays failed messages without manual loop logic in the consumer.
+- **Observable metrics:** OpenTelemetry exports custom counters to any OTLP endpoint via the configurable `OTEL_EXPORTER_OTLP_ENDPOINT` variable.
+
 ## Build
 
 ```bash
