@@ -70,3 +70,26 @@ The following Maven dependencies are used in this project:
 - **spring-boot-maven-plugin** – allows building and running the application via
   Maven goals.
 - **jacoco-maven-plugin** – generates test coverage reports during the build.
+
+## Project Structure
+
+```text
+.
+├── pom.xml                # Maven build file
+├── scripts/               # Helper scripts (e.g. MongoDB initialization)
+├── src/
+│   ├── main/
+│   │   ├── java/          # Application source code
+│   │   └── resources/     # Configuration files
+│   └── test/
+│       └── java/          # Unit tests
+└── target/                # Build output created by Maven
+```
+
+This layout follows the standard Maven directory structure used by Spring Boot. 
+Production code and configuration live under `src/main` while tests reside in 
+`src/test`. Separating these paths keeps the build clean and aligns with common 
+Java project conventions. The `scripts` directory stores utility scripts for 
+setting up dependencies such as the MongoDB initialization script. The `target` 
+folder is generated at build time and contains compiled classes and packaged 
+artifacts.
