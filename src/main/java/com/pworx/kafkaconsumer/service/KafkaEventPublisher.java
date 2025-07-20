@@ -15,7 +15,6 @@ public class KafkaEventPublisher implements EventPublisher {
 
     @Override
     public void publish(String topic, String message) throws ExecutionException, InterruptedException {
-        var x = kafkaTemplate.send(topic, message).get();
-        x
+        kafkaTemplate.send(topic, message).get();
     }
 }
